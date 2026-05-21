@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>飞书自定义公式指标卡</title>
+  <script src="https://lf1-cdn-tos.bytegoofy.com/goofy/lark/op/h5-js-sdk-1.5.28.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .metric-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      min-width: 280px;
+      max-width: 90%;
+    }
+    .metric-header {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+    .metric-value {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .metric-label {
+      font-size: 14px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    @media (max-width: 480px) {
+      .metric-card {
+        margin: 20px;
+        padding: 24px;
+      }
+      .metric-value {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="metric-card">
+    <div class="metric-header" id="title">销售数据指标卡</div>
+    <div class="metric-value" id="value">¥150,000</div>
+    <div class="metric-label" id="label">总计 销售额</div>
+  </div>
+
+  <script>
+    // 默认配置
+    var config = {
+      title: '销售数据指标卡',
+      metric: '销售额',
+      aggregation: 'sum',
+      unit: '元'
+    };
+
+    // 默认数据
+    var data = {
+      销售额: 150000,
+      订单数: 320,
+      客户数: 85
+    };
+
+    // 读取 URL 参数
+    function getUrlParams() {
+      var params = new URLSearchParams(window.location.search);
+      var configStr = params.get('config');
+      if (configStr) {
+        try {
+          config = JSON.parse(decodeURIComponent(configStr));
+        } catch (e) {
+          console.log('配置解析失败，使用默认配置');
+        }
+      }
+    }
+
+    // 计算指标
+    function calculateMetric() {
+      var value = data[config.metric] || 0;
+      switch (config.aggregation) {
+        case 'sum': return value;
+        case 'avg': return value;
+        case 'count': return Object.keys(data).length;
+        case 'max': return value;
+        case 'min': return value;
+        default: return value;
+      }
+    }
+
+    // 格式化数值
+    function formatValue(value) {
+      switch (config.unit) {
+        case '元': return '¥' + value.toLocaleString();
+        case '万': return (value / 10000).toFixed(2) + '万';
+        case '%': return value.toFixed(2) + '%';
+        default: return value.toLocaleString();
+      }
+    }
+
+    // 更新显示
+    function updateDisplay() {
+      document.getElementById('title').textContent = config.title || '指标卡';
+      document.getElementById('value').textContent = formatValue(calculateMetric());
+      
+      var aggregationText = '';
+      switch (config.aggregation) {
+        case 'sum': aggregationText = '总计'; break;
+        case 'avg': aggregationText = '平均'; break;
+        case 'count': aggregationText = '计数'; break;
+      }
+      document.getElementById('label').textContent = aggregationText + ' ' + (config.metric || '');
+    }
+
+    // 初始化
+    if (window.h5sdk) {
+      window.h5sdk.ready(function() {
+        console.log('飞书SDK已就绪');
+        getUrlParams();
+        updateDisplay();
+      });
+    } else {
+      console.log('未在飞书环境中运行，使用默认数据');
+      getUrlParams();
+      updateDisplay();
+    }
+  </script>
+</body>
+</html>
